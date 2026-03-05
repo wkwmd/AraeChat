@@ -578,10 +578,16 @@ if ($fail_ok -and $succ_ok) {
 $x05 = Join-Path $LogsDir "x05_ssot_sync.txt"
 Log-Header $x05 "X-05" "SSOT Golden Regeneration Sync"
 
-Append-Text $x05 "Running reference encoder to regenerate golden tests...`r`n"
+Append-Text $x05 "Running cargo build for golden generator...`r`n"
 Push-Location $RepoRoot
 try {
-  & cargo run --manifest-path belowc/Cargo.toml --bin generate_golden >>$x05 2>&1
+  & cargo build --manifest-path belowc/Cargo.toml --bin generate_golden >>$x05 2>&1
+  if ($LASTEXITCODE -ne 0) {
+    Fail $x05 "Failed to build reference encoder (generate_golden)."
+  }
+
+  Append-Text $x05 "Executing binary...`r`n"
+  & target\debug\generate_golden.exe >>$x05 2>&1
   if ($LASTEXITCODE -eq 0) {
     Append-Text $x05 "Golden files generated successfully. Checking git diff...`r`n"
     & git diff --exit-code tests/golden >>$x05 2>&1

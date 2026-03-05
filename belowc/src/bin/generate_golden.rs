@@ -10,6 +10,8 @@ fn get_repo_root() -> PathBuf {
 }
 
 fn main() {
+    eprintln!("DEBUG: ENTERING generate_golden main()");
+    println!("DEBUG: STDOUT is working");
     let repo_root = get_repo_root();
     let vectors_dir = repo_root.join("tests").join("vectors");
     let golden_dir = repo_root.join("tests").join("golden");

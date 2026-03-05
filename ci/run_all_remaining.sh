@@ -536,7 +536,13 @@ log_header "$X05" "X-05" "SSOT Golden Regeneration Sync"
 append_text "$X05" "Running reference encoder to regenerate golden tests...
 "
 cd "$REPO_ROOT"
-if cargo run --manifest-path belowc/Cargo.toml --bin generate_golden >>"$X05" 2>&1; then
+append_text "$X05" "Running cargo build for golden generator...
+"
+cargo build --manifest-path belowc/Cargo.toml --bin generate_golden >>"$X05" 2>&1 || fail "$X05" "Failed to build generate_golden"
+
+append_text "$X05" "Executing binary...
+"
+if ./target/debug/generate_golden >>"$X05" 2>&1; then
   append_text "$X05" "Golden files generated successfully. Checking git diff...
 "
   if git diff --exit-code tests/golden >>"$X05" 2>&1; then

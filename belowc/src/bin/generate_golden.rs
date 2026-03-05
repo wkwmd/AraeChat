@@ -3,8 +3,10 @@ use std::fs;
 use std::path::{Path, PathBuf};
 
 fn get_repo_root() -> PathBuf {
-    let manifest_dir = env!("CARGO_MANIFEST_DIR");
-    PathBuf::from(manifest_dir).parent().unwrap().to_path_buf()
+    // Both Unix and Windows CI runners explicitly `cd "$REPO_ROOT"` before
+    // invoking `cargo run --bin generate_golden`. Thus, the current working directory
+    // is always strictly the repository root.
+    std::env::current_dir().expect("Failed to get current directory")
 }
 
 fn main() {

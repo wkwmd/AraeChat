@@ -1,6 +1,6 @@
 use belowc::encode;
 use std::fs;
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 
 fn get_repo_root() -> PathBuf {
     // Both Unix and Windows CI runners explicitly `cd "$REPO_ROOT"` before
@@ -32,7 +32,9 @@ fn main() {
             
             // Only generate golden binaries for 'ok_' vectors since fail ones don't emit
             if filename.starts_with("ok_") {
-                let text = fs::read_to_string(&path).expect("Failed to read text vector");
+                let text = fs::read_to_string(&path)
+                    .expect("Failed to read text vector")
+                    .replace("\r\n", "\n");
                 match encode(&text) {
                     Ok(bytes) => {
                         let gold_path = golden_dir.join(format!("{}.bin", filename));

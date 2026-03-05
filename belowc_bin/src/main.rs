@@ -512,18 +512,18 @@ pub unsafe extern "C" fn memcmp(s1: *const u8, s2: *const u8, n: usize) -> i32 {
 #[cfg(unix)]
 pub unsafe fn run_compiler_unix(argc: isize, argv: *const *const u8) -> i32 {
     if argc != 3 {
-        return 2;
+        return 1;
     }
     
     let arg1 = *argv.add(1);
     let arg2 = *argv.add(2);
     
     if *arg1 == 45 { // 0x2D == '-'
-        return 3;
+        return 1;
     }
     
     let fd_in = sys_unix::open(arg1, sys_unix::O_RDONLY, 0);
-    if fd_in < 0 { return 4; }
+    if fd_in < 0 { return 1; }
     
     let out_path = arg2;
     let mut out_len = 0;
@@ -582,7 +582,7 @@ pub unsafe fn run_compiler_unix(argc: isize, argv: *const *const u8) -> i32 {
     
     if fd_out < 0 {
         sys_unix::close(fd_in);
-        return 5;
+        return 1;
     }
 
     let mut buf = [0u8; 1024];
@@ -592,7 +592,7 @@ pub unsafe fn run_compiler_unix(argc: isize, argv: *const *const u8) -> i32 {
     
     loop {
         let bytes_read = sys_unix::read(fd_in, buf.as_mut_ptr(), buf.len());
-        if bytes_read < 0 { return 10; } // Read error
+        if bytes_read < 0 { return 1; } // Read error
         if bytes_read == 0 { break; }    // EOF
         
         for i in 0..bytes_read as usize {
@@ -608,13 +608,13 @@ pub unsafe fn run_compiler_unix(argc: isize, argv: *const *const u8) -> i32 {
                     acc = 0;
                     line_has_valid = false;
                 } else {
-                    if cp < 0xAC00 || cp > 0xD7A3 { return 6; }
+                    if cp < 0xAC00 || cp > 0xD7A3 { return 1; }
                     let s = cp - 0xAC00;
-                    if s % 28 != 0 { return 7; }
+                    if s % 28 != 0 { return 1; }
                     let state = match (s / 28) % 21 {
                         11 => 0, 0  => 1, 4  => 2, 20 => 3,
                         8  => 4, 13 => 5, 18 => 6, 19 => 7,
-                        _  => { return 8; } 
+                        _  => { return 1; } 
                     };
                     acc = (acc | state) & 7;
                     line_has_valid = true;
@@ -635,7 +635,7 @@ pub unsafe fn run_compiler_unix(argc: isize, argv: *const *const u8) -> i32 {
     let r = sys_unix::rename(tmp_path.as_ptr(), out_path);
     if r < 0 {
         sys_unix::unlink(tmp_path.as_ptr());
-        return 9;
+        return 1;
     }
     
     0

@@ -14,7 +14,11 @@ fi
 
 echo "X-04: Cleaning and Rebuilding for Reproducible Identity Check..."
 cargo clean -p belowc_bin
-cargo build --release -p belowc_bin
+if [ "$OS" = "Darwin" ]; then
+  cargo build --release -p belowc_bin
+else
+  RUSTFLAGS="-C link-arg=-nostartfiles" cargo build --release -p belowc_bin
+fi
 
 EXE="target/release/belowc_bin"
 if [ ! -f "$EXE" ]; then

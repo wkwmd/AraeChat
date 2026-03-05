@@ -1,5 +1,5 @@
 Gate: G-10 — Lexer allow-set only
-Timestamp: 2026-03-05T08:44:47
+Timestamp: 2026-03-05T10:33:52
 g10_ok1_lf: in=ok_min_1line_lf.txt exit=0 stderr_len=0 expect_exit=0 out_exists=True
 g10_ok_multi: in=ok_multi_lines_mix.txt exit=0 stderr_len=0 expect_exit=0 out_exists=True
 STATUS: PASS

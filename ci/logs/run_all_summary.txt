@@ -1,5 +1,5 @@
 BelowCode v1 batch run
-Timestamp: 2026-03-05T08:44:38
+Timestamp: 2026-03-05T10:33:43
 
-Gates executed: G-06..G-19 (and evidence for G-07..G-09 included)
+Gates executed: G-06..G-19 (and evidence for G-07..G-09 included) + X-02 + X-05
 Overall: PASS

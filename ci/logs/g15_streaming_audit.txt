@@ -1,5 +1,5 @@
 Gate: G-15 — E1b streaming & no accumulation (source audit)
-Timestamp: 2026-03-05T08:44:58
+Timestamp: 2026-03-05T10:34:02
 Audit root: C:\Users\long0\Desktop\Aresarang
 Tokens: Vec<, collect::<Vec, to_vec(, String::, format!, println!, eprintln!
 STATUS: PASS

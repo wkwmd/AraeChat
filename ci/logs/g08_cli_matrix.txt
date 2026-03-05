@@ -1,5 +1,5 @@
 Gate: G-08 — CLI Contract positional 2 args, no flags
-Timestamp: 2026-03-05T08:44:38
+Timestamp: 2026-03-05T10:33:43
 Case argc0: exit=1 stderr_len=0 expect_exit=1
 Case argc1: exit=1 stderr_len=0 expect_exit=1
 Case argc3: exit=1 stderr_len=0 expect_exit=1

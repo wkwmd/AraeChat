@@ -32,7 +32,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          cargo build -p belowc_bin --release
+          RUSTFLAGS="-C link-arg=-nostartfiles" cargo build -p belowc_bin --release
 
       - name: Run Core Gates (G-06..G-19)
         id: gates

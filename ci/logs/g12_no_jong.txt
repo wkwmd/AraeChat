@@ -1,5 +1,5 @@
 Gate: G-12 — Lexer no-jong immediate
-Timestamp: 2026-03-05T08:44:47
+Timestamp: 2026-03-05T10:33:52
 g12_fail_jong: in=fail_jong.txt exit=1 stderr_len=0 expect_exit=1 out_exists=False
 STATUS: PASS
 jong!=0 vector failed (exit=1) with stderr_len=0

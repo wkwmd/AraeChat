@@ -35,11 +35,29 @@ jobs:
           cargo build -p belowc_bin --release
 
       - name: Run Core Gates (G-06..G-19)
+        id: gates
         shell: bash
+        continue-on-error: true
         run: |
           set -euo pipefail
           chmod +x ci/run_all_remaining.sh
           ./ci/run_all_remaining.sh
+      
+      - name: Dump Log Artifacts on UI Failure
+        if: steps.gates.outcome == 'failure'
+        shell: bash
+        run: |
+          echo "=== SUMMARY ==="
+          cat ci/logs/run_all_summary.txt || true
+          echo "=== FIRST FAIL ==="
+          for f in ci/logs/g*.txt; do
+            if grep -q "STATUS: FAIL" "$f"; then
+              echo "=> $f"
+              head -n 30 "$f" || true
+              break
+            fi
+          done
+          exit 1
 
       # Always upload evidence, even if previous step fails
       - name: Upload ci logs

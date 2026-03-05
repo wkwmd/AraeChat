@@ -553,10 +553,11 @@ pub unsafe extern "C" fn bzero(s: *mut u8, n: usize) {
 }
 
 #[cfg(target_os = "macos")]
-#[no_mangle]
-pub unsafe extern "C" fn dyld_stub_binder() {
-    loop {}
-}
+core::arch::global_asm!(
+    ".globl dyld_stub_binder",
+    "dyld_stub_binder:",
+    "b ."
+);
 
 #[cfg(unix)]
 pub unsafe fn run_compiler_unix(argc: isize, argv: *const *const u8) -> i32 {

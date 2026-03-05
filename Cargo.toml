@@ -2,19 +2,6 @@
 resolver = "2"
 
 members = [
-  "bm-core",
-
-  "aresarang-proto",
-  "aresarang-consensus",
-  "aresarang-node",
-
-  "zk-shared",
-  "zk-guest-core",
-  "zk-guest",
-  "zk-host",
-  "zk-backend-risc0",
-  "zk-backend-sp1",
-  "belowc",
   "belowc_bin",
 ]
 

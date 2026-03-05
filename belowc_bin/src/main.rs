@@ -474,7 +474,6 @@ pub mod sys_unix {
 
 #[cfg(all(target_os = "linux", target_arch = "x86_64"))]
 core::arch::global_asm!(
-    ".intel_syntax noprefix",
     ".global _start",
     "_start:",
     "mov rdi, [rsp]",
@@ -482,7 +481,6 @@ core::arch::global_asm!(
     "and rsp, -16",
     "call rust_start",
     "hlt",
-    ".att_syntax"
 );
 
 #[cfg(all(target_os = "linux", target_arch = "aarch64"))]

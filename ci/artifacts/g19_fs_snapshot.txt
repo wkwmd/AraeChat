@@ -1,0 +1,4 @@
+Atomic tmp snapshot pattern: .g19_out.bin.belowc.tmp*
+Found:
+C:\Users\long0\Desktop\Aresarang\ci\artifacts\.g19_out.bin.belowc.tmp
+C:\Users\long0\Desktop\Aresarang\ci\artifacts\.g19_out.bin.belowc.tmp.1

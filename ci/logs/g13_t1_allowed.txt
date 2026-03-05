@@ -1,0 +1,6 @@
+Gate: G-13 — T1 AllowedJung only
+Timestamp: 2026-03-05T08:44:47
+g13_ok1_lf: in=ok_min_1line_lf.txt exit=0 stderr_len=0 expect_exit=0 out_exists=True
+g13_fail_jung: in=fail_disallowed_jung.txt exit=1 stderr_len=0 expect_exit=1 out_exists=False
+STATUS: PASS
+T1 allowed passed and disallowed failed, stderr_len=0

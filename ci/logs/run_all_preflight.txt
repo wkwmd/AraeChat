@@ -1,0 +1,3 @@
+Exe: C:\Users\long0\Desktop\Aresarang\target\release\belowc_bin.exe
+Vectors: C:\Users\long0\Desktop\Aresarang\tests\vectors
+Golden: C:\Users\long0\Desktop\Aresarang\tests\golden

@@ -1,0 +1,38 @@
+﻿[workspace]
+resolver = "2"
+
+members = [
+  "bm-core",
+
+  "aresarang-proto",
+  "aresarang-consensus",
+  "aresarang-node",
+
+  "zk-shared",
+  "zk-guest-core",
+  "zk-guest",
+  "zk-host",
+  "zk-backend-risc0",
+  "zk-backend-sp1",
+  "belowc",
+  "belowc_bin",
+]
+
+[profile.dev]
+panic = "abort"
+
+[profile.release]
+panic = "abort"
+
+exclude = [
+  "attic/**",
+  "target/**",
+  "bm-hub", "bm-chat", "bm-suite", "bm-train", "bm-norm",
+  "bm-zpbot", "bm-infer", "bm-verifier", "e-zkvm",
+  "seq1_*", "seq2_*", "seq3_*", "seq4_*", "seq5_*",
+  "bin_aresarang", "core_gongri",
+]
+
+[workspace.package]
+edition = "2021"
+license = "MIT OR Apache-2.0"

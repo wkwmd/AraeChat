@@ -1,0 +1,6 @@
+Gate: G-11 — Lexer forbidden immediate
+Timestamp: 2026-03-05T08:44:47
+g11_fail_ascii: in=fail_ascii.txt exit=1 stderr_len=0 expect_exit=1 out_exists=False
+g11_fail_jamo: in=fail_jamo.txt exit=1 stderr_len=0 expect_exit=1 out_exists=False
+STATUS: PASS
+Forbidden vectors failed (exit=1) with stderr_len=0

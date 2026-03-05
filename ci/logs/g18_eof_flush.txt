@@ -1,0 +1,4 @@
+Gate: G-18 — E1b EOF flush (3B)
+Timestamp: 2026-03-05T08:44:58
+STATUS: PASS
+EOF-flush golden compare executed under G-17 (ok1_eof) and produced output

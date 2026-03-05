@@ -1,0 +1,217 @@
+gates:
+  - id: "G-01"
+    title: "SSOT Path Seal"
+    ssot_anchors: ["spec/ssot.yaml:canon.ssot_file_path_sealed"]
+    platform: ["windows"]
+    pass_criteria:
+      - kind: "file_exists"
+        path: "spec/ssot.yaml"
+      - kind: "yaml_field_equals"
+        path: "spec/ssot.yaml"
+        field: "ssot.canon.ssot_file_path_sealed"
+        expect: "spec/ssot.yaml"
+    evidence:
+      - "ci/logs/g01_ssot_path.txt"
+
+  - id: "G-02"
+    title: "SSOT YAML Parse"
+    ssot_anchors: ["spec/ssot.yaml"]
+    platform: ["windows"]
+    pass_criteria:
+      - kind: "yaml_parse_ok"
+        path: "spec/ssot.yaml"
+    evidence:
+      - "ci/logs/g02_ssot_parse.txt"
+
+  - id: "G-03"
+    title: "ZH Build no_std/no_main"
+    ssot_anchors: ["spec/ssot.yaml:zero_heap_no_dynmem_gate.rust"]
+    platform: ["windows"]
+    pass_criteria:
+      - kind: "build_ok"
+        target: "windows"
+      - kind: "build_log_contains_all"
+        path: "ci/logs/g03_build.txt"
+        expect: ["no_std", "no_main"]
+    evidence:
+      - "ci/logs/g03_build.txt"
+
+  - id: "G-04"
+    title: "ZH No External Crates"
+    ssot_anchors: ["spec/ssot.yaml:zero_heap_no_dynmem_gate.rust.external_crates"]
+    platform: ["windows"]
+    pass_criteria:
+      - kind: "deps_external_count_equals"
+        expect: 0
+    evidence:
+      - "ci/logs/g04_deps.txt"
+
+  - id: "G-05"
+    title: "ZH No alloc crate"
+    ssot_anchors: ["spec/ssot.yaml:zero_heap_no_dynmem_gate.rust.alloc_crate_forbidden"]
+    platform: ["windows"]
+    pass_criteria:
+      - kind: "forbid_string_in_symbols"
+        patterns: [" alloc::", " __rust_alloc", " __rg_alloc"]
+    evidence:
+      - "ci/logs/g05_no_alloc.txt"
+
+  - id: "G-06"
+    title: "ZH Forbidden Symbols Zero"
+    ssot_anchors: ["spec/ssot.yaml:zero_heap_no_dynmem_gate.dynamic_memory_forbidden_examples"]
+    platform: ["windows"]
+    pass_criteria:
+      - kind: "forbidden_symbols_count_equals"
+        patterns: ["malloc", "free", "realloc", "mmap", "VirtualAlloc", "RtlAllocateHeap"]
+        expect: 0
+    evidence:
+      - "ci/logs/g06_symbols.txt"
+
+  - id: "G-07"
+    title: "ZH stderr == 0 bytes"
+    ssot_anchors: ["spec/ssot.yaml:zero_heap_no_dynmem_gate.stderr_bytes_must_be"]
+    platform: ["windows"]
+    pass_criteria:
+      - kind: "stderr_len_equals"
+        case: "success"
+        expect: 0
+      - kind: "stderr_len_equals"
+        case: "failure"
+        expect: 0
+    evidence:
+      - "ci/logs/g07_stderr.txt"
+
+  - id: "G-08"
+    title: "CLI Contract positional 2 args, no flags"
+    ssot_anchors: ["spec/ssot.yaml:cli_process_contract.cli"]
+    platform: ["windows"]
+    pass_criteria:
+      - kind: "cli_matrix"
+        usage: "belowc <in> <out>"
+        flags_supported: false
+    evidence:
+      - "ci/logs/g08_cli_matrix.txt"
+
+  - id: "G-09"
+    title: "Exit code policy (0 success, 1 any failure)"
+    ssot_anchors: ["spec/ssot.yaml:cli_process_contract.exit_codes"]
+    platform: ["windows"]
+    pass_criteria:
+      - kind: "exit_code_equals"
+        case: "success"
+        expect: 0
+      - kind: "exit_code_equals"
+        case: "failure"
+        expect: 1
+    evidence:
+      - "ci/logs/g09_exit_codes.txt"
+
+  - id: "G-10"
+    title: "Lexer allow-set only"
+    ssot_anchors: ["spec/ssot.yaml:lexer.allowed"]
+    platform: ["windows"]
+    pass_criteria:
+      - kind: "test_vectors_pass"
+        suite: "lexer_allow"
+    evidence:
+      - "ci/logs/g10_lexer_allow.txt"
+
+  - id: "G-11"
+    title: "Lexer forbidden immediate"
+    ssot_anchors: ["spec/ssot.yaml:lexer.forbidden_syntaxerror_immediate"]
+    platform: ["windows"]
+    pass_criteria:
+      - kind: "test_vectors_fail"
+        suite: "lexer_forbidden"
+        expect_failure: "SyntaxError"
+    evidence:
+      - "ci/logs/g11_lexer_forbid.txt"
+
+  - id: "G-12"
+    title: "Lexer no-jong immediate"
+    ssot_anchors: ["spec/ssot.yaml:lexer.forbidden_syntaxerror_immediate"]
+    platform: ["windows"]
+    pass_criteria:
+      - kind: "test_vectors_fail"
+        suite: "lexer_jong"
+        expect_failure: "SyntaxError"
+    evidence:
+      - "ci/logs/g12_no_jong.txt"
+
+  - id: "G-13"
+    title: "T1 AllowedJung only"
+    ssot_anchors: ["spec/ssot.yaml:t1_vowel_filter.allowed_jung_set"]
+    platform: ["windows"]
+    pass_criteria:
+      - kind: "test_vectors_pass_fail"
+        suite: "t1_allowed_vs_denied"
+    evidence:
+      - "ci/logs/g13_t1_allowed.txt"
+
+  - id: "G-14"
+    title: "T1 state encoding 1:1 (S0..S7 = 0..7)"
+    ssot_anchors: ["spec/ssot.yaml:t1_vowel_filter.state_encoding_sealed"]
+    platform: ["windows"]
+    pass_criteria:
+      - kind: "mapping_assertions"
+        mapping: "spec/ssot.yaml:ssot.t1_vowel_filter.mapping_jung_to_state"
+    evidence:
+      - "ci/logs/g14_state_encoding.txt"
+
+  - id: "G-15"
+    title: "E1b streaming & no accumulation"
+    ssot_anchors: ["spec/ssot.yaml:e1b_streaming_accum_emit.streaming"]
+    platform: ["windows"]
+    pass_criteria:
+      - kind: "source_audit_forbidden_tokens"
+        patterns: ["Vec<", "collect::<Vec", "to_vec(", "String::", "format!(", "println!"]
+      - kind: "runtime_smoke"
+        suite: "e1b_streaming_smoke"
+    evidence:
+      - "ci/logs/g15_streaming_audit.txt"
+
+  - id: "G-16"
+    title: "E1b acc update rule correctness"
+    ssot_anchors: ["spec/ssot.yaml:e1b_streaming_accum_emit.acc"]
+    platform: ["windows"]
+    pass_criteria:
+      - kind: "test_vectors_pass"
+        suite: "acc_rule"
+    evidence:
+      - "ci/logs/g16_acc_rule.txt"
+
+  - id: "G-17"
+    title: "E1b emit: C-ONE, LE, LUT encoding"
+    ssot_anchors:
+      - "spec/ssot.yaml:e1b_streaming_accum_emit.emit"
+      - "spec/ssot.yaml:e1b_streaming_accum_emit.encoding_sealed"
+    platform: ["windows"]
+    pass_criteria:
+      - kind: "golden_bin_compare"
+        suite: "emit_golden"
+    evidence:
+      - "ci/logs/g17_emit_hex.txt"
+      - "ci/artifacts/g17_out.bin"
+
+  - id: "G-18"
+    title: "E1b EOF flush (3B)"
+    ssot_anchors: ["spec/ssot.yaml:e1b_streaming_accum_emit.line_termination_and_flush.eof_flush_sealed"]
+    platform: ["windows"]
+    pass_criteria:
+      - kind: "test_vectors_pass"
+        suite: "eof_flush"
+    evidence:
+      - "ci/logs/g18_eof_flush.txt"
+
+  - id: "G-19"
+    title: "Atomic write Option 3 (no contamination)"
+    ssot_anchors: ["spec/ssot.yaml:atomic_write_option3"]
+    platform: ["windows"]
+    pass_criteria:
+      - kind: "atomic_no_contam"
+        suite: "atomic_write"
+      - kind: "tmp_naming_rule"
+        max_collisions: 8
+    evidence:
+      - "ci/logs/g19_atomic.txt"
+      - "ci/artifacts/g19_fs_snapshot.txt"

@@ -1,0 +1,5 @@
+Target: target\release\belowc_bin.exe
+Scanner: PowerShell ReadAllBytes String Matching
+Patterns: alloc::, __rust_alloc, __rust_dealloc, __rust_realloc, __rust_alloc_error_handler
+Hits: 0
+

@@ -1,0 +1,3 @@
+warning: C:\Users\long0\Desktop\Aresarang\Cargo.toml: unused manifest key: profile.release.exclude
+warning: belowc_bin v0.1.0 (C:\Users\long0\Desktop\Aresarang\belowc_bin) ignoring invalid dependency `belowc` which is missing a lib target
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.03s

@@ -1,0 +1,12 @@
+Gate: G-14 — T1 state encoding 1:1 (black-box via LUT words)
+Timestamp: 2026-03-05T08:44:39
+S0(괴): out_len=4 out_hex=13 00 00 00 expect=13 00 00 00
+S1(가): out_len=4 out_hex=13 05 10 00 expect=13 05 10 00
+S2(거): out_len=4 out_hex=13 05 20 00 expect=13 05 20 00
+S3(기): out_len=4 out_hex=13 05 30 00 expect=13 05 30 00
+S4(고): out_len=4 out_hex=13 05 40 00 expect=13 05 40 00
+S5(구): out_len=4 out_hex=13 05 50 00 expect=13 05 50 00
+S6(그): out_len=4 out_hex=13 05 60 00 expect=13 05 60 00
+S7(긔): out_len=4 out_hex=73 00 00 00 expect=73 00 00 00
+STATUS: PASS
+All S0..S7 representatives produced expected LUT words (LE)

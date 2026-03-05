@@ -1,0 +1,6 @@
+Gate: G-09 — Exit code policy (0 success, 1 any failure)
+Timestamp: 2026-03-05T08:45:00
+SuccessCase(ok1_lf): exit=0 expect=0
+FailureCase(fail_ascii): exit=1 expect=1
+STATUS: PASS
+Exit code policy matches SSOT for representative cases

@@ -1,0 +1,8 @@
+[package]
+name = "belowc_bin"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+# No external crates, no alloc, no std
+belowc = { path = "../belowc" }

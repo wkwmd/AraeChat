@@ -1,0 +1,156 @@
+ssot:
+  canon:
+    format: "BelowCode v1"
+    date_kst: "2026-03-05" # static: spec sealed date (changes only on spec revision)
+    repo_root_windows: "C:\\Users\\long0\\Desktop\\Aresarang\\belowc"
+    ssot_principle: "Below rules are the single source of truth; tests/patches must validate and prove them."
+    ssot_file_path_sealed: "spec/ssot.yaml"
+
+  lexer:
+    allowed:
+      precomposed_hangul_syllables:
+        unicode_range_inclusive: ["U+AC00", "U+D7A3"]
+      whitespace_skip:
+        - { char: " ",  codepoint: "U+0020" }
+        - { char: "\\t", codepoint: "U+0009" }
+        - { char: "\\r", codepoint: "U+000D" }
+      newline:
+        - { char: "\\n", codepoint: "U+000A" }
+    forbidden_syntaxerror_immediate:
+      - "Any character not in allowed set (includes ASCII, digits, symbols, Hangul Jamo like 'ㅇ','ㅏ', etc.)"
+      - "Any Hangul syllable with jongseong (final consonant) present: jong != 0"
+    whitespace_only_or_empty_line:
+      is_error: false
+      emit_bytes: 0
+      acc_changes: false
+
+  t1_vowel_filter:
+    jung_index_range_inclusive: [0, 20]
+    allowed_jung_set: [0, 4, 8, 11, 13, 18, 19, 20]
+    state_encoding_sealed:
+      rule: "S0..S7 are exactly integers 0..7 (3-bit)."
+      mapping:
+        S0: 0
+        S1: 1
+        S2: 2
+        S3: 3
+        S4: 4
+        S5: 5
+        S6: 6
+        S7: 7
+    mapping_jung_to_state:
+      "11": { state: "S0", state_u3: 0, note: "ㅚ" }
+      "0":  { state: "S1", state_u3: 1, note: "ㅏ" }
+      "4":  { state: "S2", state_u3: 2, note: "ㅓ" }
+      "20": { state: "S3", state_u3: 3, note: "ㅣ" }
+      "8":  { state: "S4", state_u3: 4, note: "ㅗ" }
+      "13": { state: "S5", state_u3: 5, note: "ㅜ" }
+      "18": { state: "S6", state_u3: 6, note: "ㅡ" }
+      "19": { state: "S7", state_u3: 7, note: "ㅢ (=Ω)" }
+    on_jung_not_allowed: "SyntaxError (immediate, includes compound vowels)"
+
+  e1b_streaming_accum_emit:
+    streaming:
+      passes: 1
+      direction: "forward"
+      accumulation_forbidden:
+        - "No input accumulation (no buffering whole input)"
+        - "No state accumulation"
+        - "No output accumulation (no Vec, etc.)"
+      per_valid_syllable_cost: "O(1)"
+    acc:
+      width_bits: 3
+      update_expression: "acc = (acc OR state) & 0b111"
+      mask: "0b111"
+    line_independence_sealed:
+      acc_reset_at_line_start: true
+      acc_reset_value: 0
+    line_termination_and_flush:
+      newline_triggers_emit: true
+      eof_flush_sealed:
+        enabled: true
+        rule: "If EOF occurs without trailing '\\n' and the current line has >=1 valid syllable, treat as line termination and emit 1 word."
+    emit:
+      output_format: "raw .bin"
+      endianness: "little"
+      on_line_termination:
+        if_line_has_at_least_1_valid_syllable:
+          emit_words: 1
+          word_isa: "RV32I"
+          word_width_bits: 32
+          emit_bytes: 4
+        if_line_has_0_valid_syllables:
+          emit_bytes: 0
+    encoding_sealed:
+      kind: "lookup_table_8"
+      table_acc_to_rv32i_word_u32:
+        "0": "0x00000013" # ADDI x10, x0, 0
+        "1": "0x00100513" # ADDI x10, x0, 1
+        "2": "0x00200513" # ADDI x10, x0, 2
+        "3": "0x00300513" # ADDI x10, x0, 3
+        "4": "0x00400513" # ADDI x10, x0, 4
+        "5": "0x00500513" # ADDI x10, x0, 5
+        "6": "0x00600513" # ADDI x10, x0, 6
+        "7": "0x00000073" # ECALL (Ω)
+    omega_collapse_sealed:
+      omega_state: "S7"
+      rule: "No special-case branching is required; continue OR-accumulation. If any S7 occurs, acc OR 7 -> 7, thus LUT yields ECALL."
+
+  atomic_write_option3:
+    contamination_prevention:
+      on_failure: "Must not create/modify out.bin"
+      on_success: "Atomic replace tmp -> out"
+      write_mode: "Streaming write directly to writer"
+    tmp_naming:
+      same_directory_as_out: true
+      base_pattern: ".<basename>.belowc.tmp"
+      collision_attempts_max: 8
+      collision_pattern: ".<basename>.belowc.tmp.<n>"
+      path_policy: "Keep OS-native path; do not normalize"
+      path_join_buffer: "Stack-fixed buffer only; heap forbidden"
+    os_calls:
+      unix:
+        - "open(tmp)"
+        - "rename(tmp,out)"
+      windows:
+        create: "CreateFileW(tmp)"
+        rename_preferred: "SetFileInformationByHandle(FileRenameInfoEx)"
+        rename_fallback: "MoveFileExW(REPLACE_EXISTING|WRITE_THROUGH)"
+
+  zero_heap_no_dynmem_gate:
+    rust:
+      no_std: true
+      no_main: true
+      external_crates: 0
+      alloc_crate_forbidden: true
+    dynamic_memory_forbidden_examples:
+      - "malloc/free/realloc"
+      - "mmap"
+      - "VirtualAlloc"
+      - "RtlAllocateHeap"
+    stderr_bytes_must_be: 0
+    pass_evidence_required:
+      - "Build log"
+      - "Forbidden symbols count == 0"
+      - "Program exit code"
+      - "stderr == 0 bytes"
+
+  cli_process_contract:
+    cli:
+      contract: "positional"
+      argv:
+        required_args: 2
+        usage: "belowc <in> <out>"
+        flags_supported: false
+      io:
+        input: "file_path_arg1"
+        output: "file_path_arg2"
+    exit_codes:
+      success: 0
+      any_failure: 1
+    stderr_bytes_must_be: 0
+
+  telemetry_19_gate:
+    completed: 3
+    total: 19
+    remaining: 16

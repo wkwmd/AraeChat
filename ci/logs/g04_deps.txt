@@ -1,0 +1,6 @@
+Target: belowc_bin
+External Crates Count: 0
+Dependencies:
+belowc_bin v0.1.0 (C:\Users\long0\Desktop\Aresarang\belowc_bin)
+belowc v0.1.0 (C:\Users\long0\Desktop\Aresarang\belowc)
+

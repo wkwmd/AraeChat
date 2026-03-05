@@ -1,0 +1,7 @@
+Gate: G-06 — ZH Forbidden Symbols Zero (string scan)
+Timestamp: 2026-03-05T08:44:38
+Target: C:\Users\long0\Desktop\Aresarang\target\release\belowc_bin.exe
+Scanner: ASCII string scan over exe bytes
+Patterns: malloc, free, realloc, mmap, VirtualAlloc, RtlAllocateHeap, HeapAlloc, HeapFree, LocalAlloc, GlobalAlloc
+STATUS: PASS
+Hits: 0

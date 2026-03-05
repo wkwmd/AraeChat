@@ -542,6 +542,22 @@ pub unsafe extern "C" fn memcmp(s1: *const u8, s2: *const u8, n: usize) -> i32 {
     0
 }
 
+#[cfg(target_os = "macos")]
+#[no_mangle]
+pub unsafe extern "C" fn bzero(s: *mut u8, n: usize) {
+    let mut i = 0;
+    while i < n {
+        core::ptr::write_volatile(s.add(i), 0);
+        i += 1;
+    }
+}
+
+#[cfg(target_os = "macos")]
+#[no_mangle]
+pub unsafe extern "C" fn dyld_stub_binder() {
+    loop {}
+}
+
 #[cfg(unix)]
 pub unsafe fn run_compiler_unix(argc: isize, argv: *const *const u8) -> i32 {
     if argc != 3 {

@@ -392,7 +392,8 @@ pub mod sys_unix {
         let err: u8;
         core::arch::asm!(
             "syscall",
-            "setc {1}",
+            "setc {0}",
+            out(reg_byte) err,
             in("rax") n,
             in("rdi") a1,
             in("rsi") a2,
@@ -400,7 +401,6 @@ pub mod sys_unix {
             out("rcx") _,
             out("r11") _,
             lateout("rax") ret,
-            out(reg_byte) err,
             options(nostack)
         );
         if err != 0 { -(ret as isize) } else { ret as isize }
@@ -429,13 +429,13 @@ pub mod sys_unix {
         let err: u32;
         core::arch::asm!(
             "svc 0",
-            "cset {1:w}, cs",
+            "cset {0:w}, cs",
+            out(reg) err,
             in("x16") n,
             in("x0") a1,
             in("x1") a2,
             in("x2") a3,
             lateout("x0") ret,
-            out(reg) err,
             options(nostack)
         );
         if err != 0 { -(ret as isize) } else { ret as isize }

@@ -34,6 +34,13 @@ jobs:
           set -euo pipefail
           cargo build -p belowc_bin --release
 
+      - name: X-05 SSOT regeneration up-to-date
+        shell: bash
+        run: |
+          set -euo pipefail
+          chmod +x ci/tools/gen_from_ssot.py ci/tools/x05_check.sh
+          ./ci/tools/x05_check.sh
+
       - name: Run Core Gates (G-06..G-19)
         id: gates
         shell: bash

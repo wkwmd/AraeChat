@@ -368,6 +368,7 @@ pub mod sys_unix {
     pub const O_WRONLY: usize = 1;
 
     #[inline(always)]
+    #[cfg(target_arch = "x86_64")]
     pub unsafe fn syscall(n: usize, a1: usize, a2: usize, a3: usize) -> usize {
         let ret: usize;
         core::arch::asm!(
@@ -379,6 +380,22 @@ pub mod sys_unix {
             out("rcx") _,
             out("r11") _,
             lateout("rax") ret,
+            options(nostack)
+        );
+        ret
+    }
+
+    #[inline(always)]
+    #[cfg(target_arch = "aarch64")]
+    pub unsafe fn syscall(n: usize, a1: usize, a2: usize, a3: usize) -> usize {
+        let ret: usize;
+        core::arch::asm!(
+            "svc 0",
+            in("x16") n,
+            in("x0") a1,
+            in("x1") a2,
+            in("x2") a3,
+            lateout("x0") ret,
             options(nostack)
         );
         ret
@@ -455,7 +472,7 @@ pub unsafe extern "C" fn main(argc: isize, argv: *const *const u8) -> i32 {
 
 #[cfg(unix)]
 pub unsafe fn sys_exit_unix(code: i32) -> ! {
-    #[cfg(target_os = "linux")]
+    #[cfg(all(target_os = "linux", target_arch = "x86_64"))]
     core::arch::asm!(
         "syscall",
         in("rax") 60,
@@ -463,11 +480,27 @@ pub unsafe fn sys_exit_unix(code: i32) -> ! {
         options(noreturn)
     );
 
-    #[cfg(target_os = "macos")]
+    #[cfg(all(target_os = "linux", target_arch = "aarch64"))]
+    core::arch::asm!(
+        "svc 0",
+        in("x8") 93,
+        in("x0") code,
+        options(noreturn)
+    );
+
+    #[cfg(all(target_os = "macos", target_arch = "x86_64"))]
     core::arch::asm!(
         "syscall",
         in("rax") 0x2000001,
         in("rdi") code,
+        options(noreturn)
+    );
+
+    #[cfg(all(target_os = "macos", target_arch = "aarch64"))]
+    core::arch::asm!(
+        "svc 0",
+        in("x16") 1,
+        in("x0") code,
         options(noreturn)
     );
 }

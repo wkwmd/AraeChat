@@ -527,8 +527,30 @@ else
   fail "$G19" "; $why"
 fi
 
+# ============================================================
+# X-05 — SSOT Auto-Regeneration & Freshness Verification
+# ============================================================
+X05="$LOGS_DIR/x05_ssot_sync.txt"
+log_header "$X05" "X-05" "SSOT Golden Regeneration Sync"
+
+append_text "$X05" "Running reference encoder to regenerate golden tests...
+"
+cd "$REPO_ROOT"
+if cargo run --manifest-path belowc/Cargo.toml --bin generate_golden >>"$X05" 2>&1; then
+  append_text "$X05" "Golden files generated successfully. Checking git diff...
+"
+  if git diff --exit-code tests/golden >>"$X05" 2>&1; then
+    pass "$X05" "Golden tests are perfectly synced with SSOT reference encoder."
+  else
+    fail "$X05" "Golden tests are out of sync! You must commit the regenerated files."
+  fi
+else
+  fail "$X05" "Failed to execute reference encoder (generate_golden)."
+fi
+
+# Final summary
 append_text "$SUMMARY" "
-Gates executed: G-06..G-19 (and evidence for G-07..G-09 included) + X-02
+Gates executed: G-06..G-19 (and evidence for G-07..G-09 included) + X-02 + X-05
 Overall: $( [ "$ANY_FAIL" = "1" ] && echo FAIL || echo PASS )
 "
 

@@ -42,6 +42,13 @@ jobs:
           set -euo pipefail
           chmod +x ci/run_all_remaining.sh
           ./ci/run_all_remaining.sh
+
+      - name: X-04 Reproducible Build Identity Check
+        shell: bash
+        run: |
+          set -euo pipefail
+          chmod +x ci/x04_repro_check.sh
+          ./ci/x04_repro_check.sh
       
       - name: Dump Log Artifacts on UI Failure
         if: steps.gates.outcome == 'failure'

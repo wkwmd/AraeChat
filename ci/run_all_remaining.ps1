@@ -573,9 +573,34 @@ if ($fail_ok -and $succ_ok) {
 }
 
 # ============================================================
+# X-05 — SSOT Auto-Regeneration & Freshness Verification
+# ============================================================
+$x05 = Join-Path $LogsDir "x05_ssot_sync.txt"
+Log-Header $x05 "X-05" "SSOT Golden Regeneration Sync"
+
+Append-Text $x05 "Running reference encoder to regenerate golden tests...`r`n"
+Push-Location $RepoRoot
+try {
+  & cargo run --manifest-path belowc/Cargo.toml --bin generate_golden >>$x05 2>&1
+  if ($LASTEXITCODE -eq 0) {
+    Append-Text $x05 "Golden files generated successfully. Checking git diff...`r`n"
+    & git diff --exit-code tests/golden >>$x05 2>&1
+    if ($LASTEXITCODE -eq 0) {
+      Pass $x05 "Golden tests are perfectly synced with SSOT reference encoder."
+    } else {
+      Fail $x05 "Golden tests are out of sync! You must commit the regenerated files."
+    }
+  } else {
+    Fail $x05 "Failed to execute reference encoder (generate_golden)."
+  }
+} finally {
+  Pop-Location
+}
+
+# ============================================================
 # Final summary
 # ============================================================
-Append-Text $Summary "`r`nGates executed: G-06..G-19 (and evidence for G-07..G-09 included) + X-02`r`n"
+Append-Text $Summary "`r`nGates executed: G-06..G-19 (and evidence for G-07..G-09 included) + X-02 + X-05`r`n"
 Append-Text $Summary ("Overall: {0}`r`n" -f ($(if ($AnyFail) { "FAIL" } else { "PASS" })))
 
 # Exit code: 0 if all passed, else 1

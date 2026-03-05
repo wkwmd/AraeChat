@@ -425,7 +425,7 @@ printf "\xAA\xBB\xCC\xDD" >"$SEED" 2>/dev/null
 cp -f "$SEED" "$OUT19" >/dev/null 2>/dev/null || true
 
 HASH_BEFORE="$(sha256 "$OUT19")"
-MTIME_BEFORE="$(stat -f "%m" "$OUT19" 2>/dev/null || stat -c "%Y" "$OUT19" 2>/dev/null || echo "")"
+MTIME_BEFORE="$(stat -c "%Y" "$OUT19" 2>/dev/null || stat -f "%m" "$OUT19" 2>/dev/null || stat -s "$OUT19" 2>/dev/null | grep -o 'mtime=[0-9]*' | cut -d= -f2 || echo "")"
 
 # 1) failure run must not change out
 SO19F="$ART_DIR/g19_fail_stdout.txt"
@@ -434,7 +434,7 @@ EC19F="$(run_proc "$ATOMIC_MID" "$OUT19" "$SO19F" "$SE19F")"
 LEN19F="$(file_size "$SE19F")"
 
 HASH_AFTER_FAIL="$(sha256 "$OUT19")"
-MTIME_AFTER_FAIL="$(stat -f "%m" "$OUT19" 2>/dev/null || stat -c "%Y" "$OUT19" 2>/dev/null || echo "")"
+MTIME_AFTER_FAIL="$(stat -c "%Y" "$OUT19" 2>/dev/null || stat -f "%m" "$OUT19" 2>/dev/null || stat -s "$OUT19" 2>/dev/null | grep -o 'mtime=[0-9]*' | cut -d= -f2 || echo "")"
 
 append_text "$G19" "FailRun: exit=$EC19F stderr_len=$LEN19F
 Out(before): sha256=$HASH_BEFORE mtime=$MTIME_BEFORE
@@ -460,7 +460,7 @@ EC19S="$(run_proc "$OK_MULTI" "$OUT19" "$SO19S" "$SE19S")"
 LEN19S="$(file_size "$SE19S")"
 
 HASH_AFTER_SUCC="$(sha256 "$OUT19")"
-MTIME_AFTER_SUCC="$(stat -f "%m" "$OUT19" 2>/dev/null || stat -c "%Y" "$OUT19" 2>/dev/null || echo "")"
+MTIME_AFTER_SUCC="$(stat -c "%Y" "$OUT19" 2>/dev/null || stat -f "%m" "$OUT19" 2>/dev/null || stat -s "$OUT19" 2>/dev/null | grep -o 'mtime=[0-9]*' | cut -d= -f2 || echo "")"
 GOLD_HASH="$(sha256 "$GOLD_OK_MULTI")"
 
 append_text "$G19" "SuccRun: exit=$EC19S stderr_len=$LEN19S

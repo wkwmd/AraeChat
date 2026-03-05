@@ -592,7 +592,8 @@ pub unsafe fn run_compiler_unix(argc: isize, argv: *const *const u8) -> i32 {
     
     loop {
         let bytes_read = sys_unix::read(fd_in, buf.as_mut_ptr(), buf.len());
-        if bytes_read <= 0 { break; }
+        if bytes_read < 0 { return 10; } // Read error
+        if bytes_read == 0 { break; }    // EOF
         
         for i in 0..bytes_read as usize {
             if let Some(cp) = decoder.decode(buf[i]) {

@@ -514,7 +514,7 @@ pub unsafe fn run_compiler_unix(argc: isize, argv: *const *const u8) -> i32 {
     let mut out_len = 0;
     let mut last_slash = 0;
     while *out_path.add(out_len) != 0 {
-        if *out_path.add(out_len) == b'/' {
+        if *out_path.add(out_len) == b'/' || *out_path.add(out_len) == b'\\' {
             last_slash = out_len + 1;
         }
         out_len += 1;
@@ -561,7 +561,7 @@ pub unsafe fn run_compiler_unix(argc: isize, argv: *const *const u8) -> i32 {
         
         tmp_path[tmp_len] = 0;
         
-        fd_out = sys_unix::open(tmp_path.as_ptr(), sys_unix::O_WRONLY | sys_unix::O_CREAT | sys_unix::O_EXCL, 438);
+        fd_out = sys_unix::open(tmp_path.as_ptr(), sys_unix::O_WRONLY | sys_unix::O_CREAT | sys_unix::O_EXCL, 0o666);
         try_count += 1;
     }
     

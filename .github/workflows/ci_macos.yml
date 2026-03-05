@@ -57,7 +57,7 @@ jobs:
           echo "=== SUMMARY ==="
           cat ci/logs/run_all_summary.txt || true
           echo "=== FIRST FAIL ==="
-          for f in ci/logs/g*.txt; do
+          for f in ci/logs/*.txt; do
             if grep -q "STATUS: FAIL" "$f"; then
               echo "=> $f"
               head -n 30 "$f" || true

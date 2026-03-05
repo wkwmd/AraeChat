@@ -368,8 +368,8 @@ pub mod sys_unix {
     pub const O_WRONLY: usize = 1;
 
     #[inline(always)]
-    #[cfg(target_arch = "x86_64")]
-    pub unsafe fn syscall(n: usize, a1: usize, a2: usize, a3: usize) -> usize {
+    #[cfg(all(target_os = "linux", target_arch = "x86_64"))]
+    pub unsafe fn syscall(n: usize, a1: usize, a2: usize, a3: usize) -> isize {
         let ret: usize;
         core::arch::asm!(
             "syscall",
@@ -382,53 +382,93 @@ pub mod sys_unix {
             lateout("rax") ret,
             options(nostack)
         );
-        ret
+        ret as isize
     }
 
     #[inline(always)]
-    #[cfg(target_arch = "aarch64")]
-    pub unsafe fn syscall(n: usize, a1: usize, a2: usize, a3: usize) -> usize {
+    #[cfg(all(target_os = "macos", target_arch = "x86_64"))]
+    pub unsafe fn syscall(n: usize, a1: usize, a2: usize, a3: usize) -> isize {
+        let ret: usize;
+        let err: u8;
+        core::arch::asm!(
+            "syscall",
+            "setc {1}",
+            in("rax") n,
+            in("rdi") a1,
+            in("rsi") a2,
+            in("rdx") a3,
+            out("rcx") _,
+            out("r11") _,
+            lateout("rax") ret,
+            out(reg_byte) err,
+            options(nostack)
+        );
+        if err != 0 { -(ret as isize) } else { ret as isize }
+    }
+
+    #[inline(always)]
+    #[cfg(all(target_os = "linux", target_arch = "aarch64"))]
+    pub unsafe fn syscall(n: usize, a1: usize, a2: usize, a3: usize) -> isize {
         let ret: usize;
         core::arch::asm!(
             "svc 0",
-            in("x16") n,
+            in("x8") n,
             in("x0") a1,
             in("x1") a2,
             in("x2") a3,
             lateout("x0") ret,
             options(nostack)
         );
-        ret
+        ret as isize
+    }
+
+    #[inline(always)]
+    #[cfg(all(target_os = "macos", target_arch = "aarch64"))]
+    pub unsafe fn syscall(n: usize, a1: usize, a2: usize, a3: usize) -> isize {
+        let ret: usize;
+        let err: u32;
+        core::arch::asm!(
+            "svc 0",
+            "cset {1:w}, cs",
+            in("x16") n,
+            in("x0") a1,
+            in("x1") a2,
+            in("x2") a3,
+            lateout("x0") ret,
+            out(reg) err,
+            options(nostack)
+        );
+        if err != 0 { -(ret as isize) } else { ret as isize }
     }
 
     #[inline(always)]
     pub unsafe fn open(path: *const u8, flags: usize, mode: usize) -> isize {
-        syscall(SYS_OPEN, path as usize, flags, mode) as isize
+        syscall(SYS_OPEN, path as usize, flags, mode)
     }
     
     #[inline(always)]
     pub unsafe fn read(fd: isize, buf: *mut u8, count: usize) -> isize {
-        syscall(SYS_READ, fd as usize, buf as usize, count) as isize
+        syscall(SYS_READ, fd as usize, buf as usize, count)
     }
 
     #[inline(always)]
     pub unsafe fn write(fd: isize, buf: *const u8, count: usize) -> isize {
-        syscall(SYS_WRITE, fd as usize, buf as usize, count) as isize
+        syscall(SYS_WRITE, fd as usize, buf as usize, count)
     }
 
     #[inline(always)]
     pub unsafe fn close(fd: isize) -> isize {
-        syscall(SYS_CLOSE, fd as usize, 0, 0) as isize
+        syscall(SYS_CLOSE, fd as usize, 0, 0)
     }
 
     #[inline(always)]
     pub unsafe fn rename(oldpath: *const u8, newpath: *const u8) -> isize {
-        syscall(SYS_RENAME, oldpath as usize, newpath as usize, 0) as isize
+        syscall(SYS_RENAME, oldpath as usize, newpath as usize, 0)
     }
 
     #[inline(always)]
     pub unsafe fn unlink(pathname: *const u8) -> isize {
-        syscall(SYS_UNLINK, pathname as usize, 0, 0) as isize
+        syscall(SYS_UNLINK, pathname as usize, 0, 0)
     }
 }
 

@@ -172,6 +172,44 @@ else
 fi
 
 # ============================================================
+# X-02 — Forbidden Symbol/Import Reference Proof (Native Extractor)
+# ============================================================
+X02="$LOGS_DIR/x02_symbol_dump.txt"
+log_header "$X02" "X-02" "Zero Symbols Proof (Native OS extractor)"
+
+append_text "$X02" "Target: $EXE
+"
+
+X02_HITS=()
+X02_DUMP=""
+if [ "$(uname)" = "Darwin" ]; then
+  append_text "$X02" "Scanner: nm -u (macOS undefined symbols)
+"
+  X02_DUMP="$(nm -u "$EXE" 2>/dev/null || true)"
+else
+  append_text "$X02" "Scanner: nm -u (Linux undefined symbols)
+"
+  X02_DUMP="$(nm -u "$EXE" 2>/dev/null || true)"
+fi
+
+append_text "$X02" "--- SYMBOL DUMP START ---
+$X02_DUMP
+--- SYMBOL DUMP END ---
+"
+
+for pat in "${FORBIDDEN[@]}"; do
+  if printf "%s" "$X02_DUMP" | grep -F "$pat" >/dev/null 2>/dev/null; then
+    X02_HITS+=("$pat")
+  fi
+done
+
+if [ "${#X02_HITS[@]}" -eq 0 ]; then
+  pass "$X02" "Hits: 0"
+else
+  fail "$X02" "Hits: ${#X02_HITS[@]} => ${X02_HITS[*]}"
+fi
+
+# ============================================================
 # G-08 — CLI matrix (arity/flags)
 # ============================================================
 G08="$LOGS_DIR/g08_cli_matrix.txt"
@@ -490,7 +528,7 @@ else
 fi
 
 append_text "$SUMMARY" "
-Gates executed: G-06..G-19 (and evidence for G-07..G-09 included)
+Gates executed: G-06..G-19 (and evidence for G-07..G-09 included) + X-02
 Overall: $( [ "$ANY_FAIL" = "1" ] && echo FAIL || echo PASS )
 "
 

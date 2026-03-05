@@ -146,6 +146,34 @@ if ($hits.Count -eq 0) {
 }
 
 # ============================================================
+# X-02 — Forbidden Symbol/Import Reference Proof (Native Extractor)
+# ============================================================
+$x02 = Join-Path $LogsDir "x02_symbol_dump.txt"
+Log-Header $x02 "X-02" "Zero Symbols Proof (Native OS extractor)"
+
+Append-Text $x02 ("Target: {0}`r`nScanner: dumpbin /IMPORTS`r`n" -f $Exe)
+
+$x02Dump = ""
+if (Get-Command "dumpbin" -ErrorAction SilentlyContinue) {
+  $x02Dump = (& dumpbin /IMPORTS $Exe 2>$null | Out-String)
+} elseif (Get-Command "llvm-objdump" -ErrorAction SilentlyContinue) {
+  $x02Dump = (& llvm-objdump -p $Exe 2>$null | Out-String)
+}
+
+Append-Text $x02 ("--- SYMBOL DUMP START ---`r`n{0}`r`n--- SYMBOL DUMP END ---`r`n" -f $x02Dump)
+
+$x02Hits = @()
+foreach ($pat in $forbidden) {
+  if ($x02Dump.Contains($pat)) { $x02Hits += $pat }
+}
+
+if ($x02Hits.Count -eq 0) {
+  Pass $x02 "Hits: 0"
+} else {
+  Fail $x02 ("Hits: {0} => {1}" -f $x02Hits.Count, ($x02Hits -join ", "))
+}
+
+# ============================================================
 # G-08 — CLI matrix (arity/flags) + partial evidence for G-09/G-07
 # ============================================================
 $g08 = Join-Path $LogsDir "g08_cli_matrix.txt"
@@ -547,7 +575,7 @@ if ($fail_ok -and $succ_ok) {
 # ============================================================
 # Final summary
 # ============================================================
-Append-Text $Summary "`r`nGates executed: G-06..G-19 (and evidence for G-07..G-09 included)`r`n"
+Append-Text $Summary "`r`nGates executed: G-06..G-19 (and evidence for G-07..G-09 included) + X-02`r`n"
 Append-Text $Summary ("Overall: {0}`r`n" -f ($(if ($AnyFail) { "FAIL" } else { "PASS" })))
 
 # Exit code: 0 if all passed, else 1

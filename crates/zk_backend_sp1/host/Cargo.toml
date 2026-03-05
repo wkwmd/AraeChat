@@ -1,0 +1,11 @@
+[package]
+name = "zk_backend_sp1_host"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+path = "src/lib.rs"
+
+[dependencies]
+anyhow = "1"
+sp1-sdk = { version = "=5.2.4" }

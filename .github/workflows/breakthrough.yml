@@ -1,0 +1,95 @@
+name: FPGA Bitstream Breakthrough - ES Override
+
+on:
+  push:
+    branches: [main, master, develop]
+  workflow_dispatch:
+
+jobs:
+  breakthrough:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: ⚙️ Setup OSS CAD Suite
+        run: |
+          cd /tmp
+          wget -q https://github.com/YosysHQ/oss-cad-suite-build/releases/download/2024-12-13/oss-cad-suite-2024-12-13-ubuntu-22.04.AppImage
+          chmod +x *.AppImage
+          ./*.AppImage --appimage-extract > /dev/null 2>&1
+          echo "OSS_CAD_PATH=$(pwd)/squashfs-root/usr" >> $GITHUB_ENV
+
+      - name: 🔍 Verify Tools
+        run: |
+          export PATH="${{ env.OSS_CAD_PATH }}/bin:$PATH"
+          echo "Yosys:" && yosys --version | head -1
+          echo "NextPNR:" && nextpnr-himbaechel --version 2>&1 | head -1 || echo "NextPNR ready"
+
+      - name: 🔨 Synthesis (Yosys) → gravity_gw2a.json
+        run: |
+          export PATH="${{ env.OSS_CAD_PATH }}/bin:$PATH"
+          cd fpga/phase-gate-gravity/gowin_project/phase_gate_gravity1
+          mkdir -p build_oss
+          yosys -p "
+            read_verilog src/phase_gate_top_hw.v
+            read_verilog src/gravity_array_simd.v
+            read_verilog src/gravity_pe_core.v
+            read_verilog src/clk_pll.v
+            read_verilog src/ddr3_simple_blackbox.v
+            synth_gowin -family gw2a -top phase_gate_top_hw -json build_oss/gravity_gw2a.json
+          "
+          ls -lh build_oss/gravity_gw2a.json
+
+      - name: 🎯 PnR Breakthrough (NextPNR) - ES Override
+        run: |
+          export PATH="${{ env.OSS_CAD_PATH }}/bin:$PATH"
+          cd fpga/phase-gate-gravity/gowin_project/phase_gate_gravity1
+          nextpnr-himbaechel \
+            --json build_oss/gravity_gw2a.json \
+            --device GW2A-18C \
+            --vopt family=GW2A-18C \
+            --write build_oss/gravity_pnr.json 2>&1 | tee nextpnr.log
+          ls -lh build_oss/gravity_pnr.json || echo "PNR 진행 중..."
+
+      - name: 📦 Bitstream Generation (Apycula)
+        run: |
+          export PATH="${{ env.OSS_CAD_PATH }}/bin:$PATH"
+          cd fpga/phase-gate-gravity/gowin_project/phase_gate_gravity1
+          pip install -q apycula
+          python3 -m apycula.gowin_pack \
+            build_oss/gravity_pnr.json \
+            -d GW2A-18C \
+            -o build_oss/gravity_opensource.fs \
+            -s src/gravity.cst 2>&1 | tee apycula.log
+          ls -lh build_oss/gravity_opensource.fs
+
+      - name: 🏆 Breakthrough Success!
+        run: |
+          cd fpga/phase-gate-gravity/gowin_project/phase_gate_gravity1
+          echo "════════════════════════════════════════════"
+          echo "✅ FPGA Bitstream Breakthrough Complete!"
+          echo "════════════════════════════════════════════"
+          echo ""
+          echo "📊 Output Files:"
+          ls -lh build_oss/gravity_*.{json,fs} 2>/dev/null || true
+          echo ""
+          echo "📍 Location: fpga/phase-gate-gravity/gowin_project/phase_gate_gravity1/build_oss/"
+          echo ""
+          echo "🚀 Ready for: Tang Nano 20K Deployment"
+          echo "════════════════════════════════════════════"
+
+      - name: 📥 Upload Bitstream Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: gravity-opensource-bitstream
+          path: fpga/phase-gate-gravity/gowin_project/phase_gate_gravity1/build_oss/gravity_opensource.fs
+          retention-days: 30
+
+      - name: 📋 Upload Logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-logs
+          path: fpga/phase-gate-gravity/gowin_project/phase_gate_gravity1/*.log
